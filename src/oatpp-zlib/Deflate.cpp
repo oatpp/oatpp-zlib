@@ -23,15 +23,17 @@
  ***************************************************************************/
 
 #include "Deflate.hpp"
+#include "oatpp/core/data/stream/BufferStream.hpp"
 
 namespace oatpp { namespace zlib {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DeflateStreamReader
 
-DeflateStreamReader::DeflateStreamReader(data::stream::ReadCallback* sourceCallback, v_buff_size chunkBufferSize)
+DeflateStreamReader::DeflateStreamReader(data::stream::ReadCallback* sourceCallback, v_int32 compressionLevel, v_buff_size chunkBufferSize)
   : m_sourceCallback(sourceCallback)
   , m_chunkBufferSize(chunkBufferSize)
+  , m_compressionLevel(compressionLevel)
   , m_state(STATE_WAITING)
 {}
 
@@ -59,7 +61,10 @@ data::v_io_size DeflateStreamReader::read(void *buffer, v_buff_size count) {
     m_zStream.zfree = Z_NULL;
     m_zStream.opaque = Z_NULL;
 
-    auto res = deflateInit(&m_zStream, Z_DEFAULT_COMPRESSION);
+    m_zStream.next_in = nullptr;
+    m_zStream.avail_in = 0;
+
+    auto res = deflateInit(&m_zStream, m_compressionLevel);
     if(res != Z_OK) {
       return 0;
     }
@@ -86,12 +91,16 @@ data::v_io_size DeflateStreamReader::read(void *buffer, v_buff_size count) {
 
     while (m_zStream.avail_out > 0) {
 
-      chunkSize = m_sourceCallback->read(chunk.get(), chunkSize);
+      if(m_zStream.avail_in == 0) {
 
-      if (chunkSize > 0) {
+        chunkSize = m_sourceCallback->read(chunk.get(), chunkSize);
 
         m_zStream.next_in = (Bytef *) chunk.get();
         m_zStream.avail_in = (uInt) chunkSize;
+
+      }
+
+      if (chunkSize > 0) {
 
         auto res = deflate(&m_zStream, Z_NO_FLUSH);
 
@@ -203,7 +212,6 @@ data::v_io_size InflateStreamReader::read(void *buffer, v_buff_size count) {
 
         if(res != Z_OK) {
           if(res == Z_DATA_ERROR) {
-            OATPP_LOGE("aaa", "Z_DATA_ERROR");
             return 0;
           }
           break;
@@ -231,6 +239,51 @@ data::v_io_size InflateStreamReader::read(void *buffer, v_buff_size count) {
   }
 
   return count - m_zStream.avail_out;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Convenience Functions
+
+oatpp::String deflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize) {
+
+  oatpp::data::stream::BufferOutputStream resultBuffer;
+
+  oatpp::data::stream::BufferInputStream textStream(text);
+  oatpp::data::stream::DefaultReadCallback streamReader(&textStream);
+  oatpp::zlib::DeflateStreamReader reader(&streamReader, Z_DEFAULT_COMPRESSION, chunkSize);
+
+  oatpp::String buffer(bufferSize);
+  oatpp::data::v_io_size res = 1;
+  while (res > 0) {
+    res = reader.read(buffer->getData(), buffer->getSize());
+    if (res > 0) {
+      resultBuffer.write(buffer->getData(), res);
+    }
+  }
+
+  return resultBuffer.toString();
+
+}
+
+oatpp::String inflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize) {
+
+  oatpp::data::stream::BufferOutputStream resultBuffer;
+
+  oatpp::data::stream::BufferInputStream textStream(text);
+  oatpp::data::stream::DefaultReadCallback streamReader(&textStream);
+  oatpp::zlib::InflateStreamReader reader(&streamReader, chunkSize);
+
+  oatpp::String buffer(bufferSize);
+  oatpp::data::v_io_size res = 1;
+  while (res > 0) {
+    res = reader.read(buffer->getData(), buffer->getSize());
+    if (res > 0) {
+      resultBuffer.write(buffer->getData(), res);
+    }
+  }
+
+  return resultBuffer.toString();
 
 }
 

@@ -1,8 +1,8 @@
 
 add_library(${OATPP_THIS_MODULE_NAME}
-        oatpp-zlib/MyClass.hpp
-        oatpp-zlib/MyClass.cpp
-        oatpp-zlib/Deflate.cpp oatpp-zlib/Deflate.hpp)
+        oatpp-zlib/Deflate.cpp
+        oatpp-zlib/Deflate.hpp
+)
 
 set_target_properties(${OATPP_THIS_MODULE_NAME} PROPERTIES
         CXX_STANDARD 11

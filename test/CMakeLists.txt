@@ -1,6 +1,7 @@
 add_executable(module-tests
         oatpp-zlib/tests.cpp
-)
+        oatpp-zlib/DeflateTest.cpp
+        oatpp-zlib/DeflateTest.hpp)
 
 set_target_properties(module-tests PROPERTIES
         CXX_STANDARD 11

@@ -1,28 +1,12 @@
 
-#include "oatpp-test/UnitTest.hpp"
-
-#include "oatpp-zlib/MyClass.hpp"
-
-#include "oatpp/core/concurrency/SpinLock.hpp"
-#include "oatpp/core/base/Environment.hpp"
+#include "./DeflateTest.hpp"
 
 #include <iostream>
 
 namespace {
 
-class Test : public oatpp::test::UnitTest {
-public:
-  Test() : oatpp::test::UnitTest("MyTag")
-  {}
-
-  void onRun() override {
-    // TODO write correct  tests
-    MyClass::doSomething();
-  }
-};
-
 void runTests() {
-  OATPP_RUN_TEST(Test);
+  OATPP_RUN_TEST(oatpp::test::zlib::DeflateTest);
 }
 
 }
