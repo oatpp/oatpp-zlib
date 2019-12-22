@@ -30,10 +30,11 @@ namespace oatpp { namespace zlib {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DeflateStreamReader
 
-DeflateStreamReader::DeflateStreamReader(data::stream::ReadCallback* sourceCallback, v_int32 compressionLevel, v_buff_size chunkBufferSize)
+DeflateStreamReader::DeflateStreamReader(data::stream::ReadCallback* sourceCallback, v_int32 compressionLevel, v_buff_size chunkBufferSize, bool useGzip)
   : m_sourceCallback(sourceCallback)
-  , m_chunkBufferSize(chunkBufferSize)
   , m_compressionLevel(compressionLevel)
+  , m_chunkBufferSize(chunkBufferSize)
+  , m_useGzip(useGzip)
   , m_state(STATE_WAITING)
 {}
 
@@ -64,7 +65,19 @@ data::v_io_size DeflateStreamReader::read(void *buffer, v_buff_size count) {
     m_zStream.next_in = nullptr;
     m_zStream.avail_in = 0;
 
-    auto res = deflateInit(&m_zStream, m_compressionLevel);
+    v_int32 res;
+
+    if(m_useGzip) {
+      res = deflateInit2(&m_zStream,
+                         m_compressionLevel,
+                         Z_DEFLATED,
+                         15 | 16,
+                         8 /* default memory */,
+                         Z_DEFAULT_STRATEGY);
+    } else {
+      res = deflateInit(&m_zStream, m_compressionLevel);
+    }
+
     if(res != Z_OK) {
       return 0;
     }
@@ -136,9 +149,10 @@ data::v_io_size DeflateStreamReader::read(void *buffer, v_buff_size count) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // InflateStreamReader
 
-InflateStreamReader::InflateStreamReader(data::stream::ReadCallback* sourceCallback, v_buff_size chunkBufferSize)
+InflateStreamReader::InflateStreamReader(data::stream::ReadCallback* sourceCallback, v_buff_size chunkBufferSize, bool useGzip)
   : m_sourceCallback(sourceCallback)
   , m_chunkBufferSize(chunkBufferSize)
+  , m_useGzip(useGzip)
   , m_state(STATE_WAITING)
 {}
 
@@ -169,7 +183,14 @@ data::v_io_size InflateStreamReader::read(void *buffer, v_buff_size count) {
     m_zStream.next_in = nullptr;
     m_zStream.avail_in = 0;
 
-    auto res = inflateInit(&m_zStream);
+    v_int32 res;
+
+    if(m_useGzip) {
+      res = inflateInit2(&m_zStream, 15 | 16);
+    } else {
+      res = inflateInit(&m_zStream);
+    }
+
     if(res != Z_OK) {
       return 0;
     }
@@ -245,13 +266,13 @@ data::v_io_size InflateStreamReader::read(void *buffer, v_buff_size count) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Convenience Functions
 
-oatpp::String deflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize) {
+oatpp::String deflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize, bool useGzip) {
 
   oatpp::data::stream::BufferOutputStream resultBuffer;
 
   oatpp::data::stream::BufferInputStream textStream(text);
   oatpp::data::stream::DefaultReadCallback streamReader(&textStream);
-  oatpp::zlib::DeflateStreamReader reader(&streamReader, Z_DEFAULT_COMPRESSION, chunkSize);
+  oatpp::zlib::DeflateStreamReader reader(&streamReader, Z_DEFAULT_COMPRESSION, chunkSize, useGzip);
 
   oatpp::String buffer(bufferSize);
   oatpp::data::v_io_size res = 1;
@@ -266,13 +287,13 @@ oatpp::String deflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_s
 
 }
 
-oatpp::String inflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize) {
+oatpp::String inflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize, bool useGzip) {
 
   oatpp::data::stream::BufferOutputStream resultBuffer;
 
   oatpp::data::stream::BufferInputStream textStream(text);
   oatpp::data::stream::DefaultReadCallback streamReader(&textStream);
-  oatpp::zlib::InflateStreamReader reader(&streamReader, chunkSize);
+  oatpp::zlib::InflateStreamReader reader(&streamReader, chunkSize, useGzip);
 
   oatpp::String buffer(bufferSize);
   oatpp::data::v_io_size res = 1;

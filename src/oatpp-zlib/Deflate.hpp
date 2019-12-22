@@ -41,8 +41,9 @@ private:
   static constexpr v_int32 STATE_DONE = 3;
 private:
   data::stream::ReadCallback* m_sourceCallback;
-  v_buff_size m_chunkBufferSize;
   v_int32 m_compressionLevel;
+  v_buff_size m_chunkBufferSize;
+  bool m_useGzip;
   v_int32 m_state;
   z_stream m_zStream;
 private:
@@ -53,7 +54,10 @@ public:
    * Constructor.
    * @param sourceCallback - &id:oatpp::data::stream::ReadCallback;.
    */
-  DeflateStreamReader(data::stream::ReadCallback* sourceCallback, v_int32 compressionLevel = Z_DEFAULT_COMPRESSION, v_buff_size chunkBufferSize = 1024);
+  DeflateStreamReader(data::stream::ReadCallback* sourceCallback,
+                      v_int32 compressionLevel = Z_DEFAULT_COMPRESSION,
+                      v_buff_size chunkBufferSize = 1024,
+                      bool useGzip = false);
 
   /**
    * Read deflated buffer from source callback.
@@ -77,6 +81,7 @@ private:
 private:
   data::stream::ReadCallback* m_sourceCallback;
   v_buff_size m_chunkBufferSize;
+  bool m_useGzip;
   v_int32 m_state;
   z_stream m_zStream;
 private:
@@ -87,7 +92,9 @@ public:
    * Constructor.
    * @param sourceCallback - &id:oatpp::data::stream::ReadCallback;.
    */
-  InflateStreamReader(data::stream::ReadCallback* sourceCallback, v_buff_size chunkBufferSize = 1024);
+  InflateStreamReader(data::stream::ReadCallback* sourceCallback,
+                      v_buff_size chunkBufferSize = 1024,
+                      bool useGzip = false);
 
   /**
    * Read deflated buffer from source callback.
@@ -99,8 +106,8 @@ public:
 
 };
 
-oatpp::String deflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize);
-oatpp::String inflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize);
+oatpp::String deflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize, bool useGzip);
+oatpp::String inflate(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize, bool useGzip);
 
 }}
 

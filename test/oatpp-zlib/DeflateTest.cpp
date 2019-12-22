@@ -27,9 +27,13 @@
 #include "oatpp-zlib/Deflate.hpp"
 #include "oatpp/core/utils/Random.hpp"
 
+#include "oatpp-test/Checker.hpp"
+
 namespace oatpp { namespace test { namespace zlib {
 
-void DeflateTest::onRun() {
+namespace {
+
+void runCompressor (bool useGzip) {
 
   for (v_int32 i = 1; i <= 128; i++) {
     for (v_int32 b = 1; b <= 64; b++) {
@@ -37,16 +41,32 @@ void DeflateTest::onRun() {
       oatpp::String original(2048);
       oatpp::utils::random::Random::randomBytes(original->getData(), original->getSize());
 
-      auto result = oatpp::zlib::deflate(original, i, b);
-      auto check = oatpp::zlib::inflate(result, i, b);
+      auto result = oatpp::zlib::deflate(original, i, b, useGzip);
+      auto check = oatpp::zlib::inflate(result, i, b, useGzip);
 
       if (check != original) {
-        OATPP_LOGD(TAG, "Error. i=%d, b=%d", i, b);
+        OATPP_LOGD("TEST", "Error. i=%d, b=%d", i, b);
       }
 
       OATPP_ASSERT(check == original);
 
     }
+  }
+
+}
+
+}
+
+void DeflateTest::onRun() {
+
+  {
+    oatpp::test::PerformanceChecker timer("Deflate");
+    runCompressor(false);
+  }
+
+  {
+    oatpp::test::PerformanceChecker timer("Gzip");
+    runCompressor(true);
   }
 
 }
