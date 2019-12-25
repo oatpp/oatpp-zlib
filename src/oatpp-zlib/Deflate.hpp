@@ -69,6 +69,43 @@ public:
 
 };
 
+class AsyncDeflateStreamReader : public oatpp::data::stream::AsyncReadCallback {
+public:
+  typedef data::stream::AsyncInlineReadData AsyncInlineReadData;
+private:
+  static constexpr v_int32 STATE_WAITING = 0;
+  static constexpr v_int32 STATE_READING = 1;
+  static constexpr v_int32 STATE_FINISHING = 2;
+  static constexpr v_int32 STATE_DONE = 3;
+private:
+  std::shared_ptr<data::stream::AsyncReadCallback> m_sourceCallback;
+  v_int32 m_compressionLevel;
+  v_buff_size m_chunkBufferSize;
+  bool m_useGzip;
+  v_int32 m_state;
+  z_stream m_zStream;
+public:
+
+  /**
+   * Constructor.
+   * @param sourceCallback - &id:oatpp::data::stream::AsyncReadCallback;.
+   */
+  AsyncDeflateStreamReader(const std::shared_ptr<data::stream::AsyncReadCallback>& sourceCallback,
+                           v_int32 compressionLevel = Z_DEFAULT_COMPRESSION,
+                           v_buff_size chunkBufferSize = 1024,
+                           bool useGzip = false);
+
+
+  /**
+   * Async-Inline read callback.
+   * @param inlineData - &id:oatpp::data::stream::AsyncInlineReadData;.
+   * @param nextAction - next action when read finished.
+   * @return - &id:oatpp::async::Action;.
+   */
+  oatpp::async::Action readAsyncInline(AsyncInlineReadData& inlineData, oatpp::async::Action&& nextAction) override;
+
+};
+
 /**
  * Proxy reader to read and inflate source.
  */
@@ -103,6 +140,42 @@ public:
    * @return - &id:oatpp::data::v_io_size;.
    */
   data::v_io_size read(void *buffer, v_buff_size count) override;
+
+};
+
+class AsyncInflateStreamReader : public oatpp::data::stream::AsyncReadCallback {
+public:
+  typedef data::stream::AsyncInlineReadData AsyncInlineReadData;
+private:
+  static constexpr v_int32 STATE_WAITING = 0;
+  static constexpr v_int32 STATE_READING = 1;
+  static constexpr v_int32 STATE_FINISHING = 2;
+  static constexpr v_int32 STATE_DONE = 3;
+private:
+  std::shared_ptr<data::stream::AsyncReadCallback> m_sourceCallback;
+  v_int32 m_compressionLevel;
+  v_buff_size m_chunkBufferSize;
+  bool m_useGzip;
+  v_int32 m_state;
+  z_stream m_zStream;
+public:
+
+  /**
+   * Constructor.
+   * @param sourceCallback - &id:oatpp::data::stream::AsyncReadCallback;.
+   */
+  AsyncInflateStreamReader(const std::shared_ptr<data::stream::AsyncReadCallback>& sourceCallback,
+                           v_buff_size chunkBufferSize = 1024,
+                           bool useGzip = false);
+
+
+  /**
+   * Async-Inline read callback.
+   * @param inlineData - &id:oatpp::data::stream::AsyncInlineReadData;.
+   * @param nextAction - next action when read finished.
+   * @return - &id:oatpp::async::Action;.
+   */
+  oatpp::async::Action readAsyncInline(AsyncInlineReadData& inlineData, oatpp::async::Action&& nextAction) override;
 
 };
 

@@ -1,12 +1,14 @@
 
 #include "./DeflateTest.hpp"
+#include "./DeflateAsyncTest.hpp"
 
 #include <iostream>
 
 namespace {
 
 void runTests() {
-  OATPP_RUN_TEST(oatpp::test::zlib::DeflateTest);
+  //OATPP_RUN_TEST(oatpp::test::zlib::DeflateTest);
+  OATPP_RUN_TEST(oatpp::test::zlib::DeflateAsyncTest);
 }
 
 }
