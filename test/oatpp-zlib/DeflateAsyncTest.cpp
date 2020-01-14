@@ -24,100 +24,99 @@
 
 #include "DeflateAsyncTest.hpp"
 
-#include "oatpp-zlib/Deflate.hpp"
-
-#include "oatpp/core/data/stream/BufferStream.hpp"
+#include "oatpp-zlib/Processor.hpp"
 #include "oatpp/core/utils/Random.hpp"
+#include "oatpp/core/data/stream/BufferStream.hpp"
 
-#include "oatpp-test/Checker.hpp"
+#include "oatpp/core/async/Executor.hpp"
 
 namespace oatpp { namespace test { namespace zlib {
 
 namespace {
 
-class AsyncStreamReader : public oatpp::data::stream::AsyncReadCallback {
+class TestCoroutine : public oatpp::async::Coroutine<TestCoroutine> {
 private:
-  std::shared_ptr<oatpp::data::stream::InputStream> m_stream;
+  bool m_gzip;
+private:
+  oatpp::String m_original;
+  oatpp::data::stream::BufferInputStream m_inStream;
+  oatpp::data::stream::BufferOutputStream m_outStream;
+private:
+  v_int32 m_e;
+  v_int32 m_d;
 public:
 
-  AsyncStreamReader(const std::shared_ptr<oatpp::data::stream::InputStream>& stream)
-    : m_stream(stream)
+  TestCoroutine(bool gzip)
+    : m_gzip(gzip)
+    , m_original(1024)
+    , m_inStream(m_original)
+    , m_e(1)
+    , m_d(0)
   {}
 
-  oatpp::async::Action readAsyncInline(oatpp::data::stream::AsyncInlineReadData& inlineData, oatpp::async::Action&& nextAction) override {
+  Action act() {
 
-    auto res = m_stream->read(inlineData.currBufferPtr, inlineData.bytesLeft);
+    m_d ++;
 
-    if(res > 0) {
-      inlineData.inc(res);
-      return std::forward<oatpp::async::Action>(nextAction);
+    if(m_d > 64) {
+      m_d = 1;
+      m_e ++;
     }
 
-    if(res == oatpp::data::IOError::RETRY_READ || res == oatpp::data::IOError::WAIT_RETRY_READ ||
-       res == oatpp::data::IOError::RETRY_WRITE || res == oatpp::data::IOError::WAIT_RETRY_WRITE) {
-      return m_stream->suggestInputStreamAction(res);
+    if(m_e > 64) {
+      return finish();
     }
 
-    return std::forward<oatpp::async::Action>(nextAction);
+    oatpp::utils::random::Random::randomBytes(m_original->getData(), m_original->getSize());
+    m_inStream.reset(m_original.getPtr(), m_original->getData(), m_original->getSize());
+    m_outStream.setCurrentPosition(0);
+    return yieldTo(&TestCoroutine::runPipeline);
+  }
+
+  Action runPipeline() {
+    auto encoder = std::make_shared<oatpp::zlib::DeflateEncoder>(m_e, m_gzip);
+    auto decoder = std::make_shared<oatpp::zlib::DeflateDecoder>(m_d, m_gzip);
+
+    auto pipeline = std::shared_ptr<oatpp::data::buffer::Processor>(new oatpp::data::buffer::ProcessingPipeline({
+      oatpp::base::ObjectHandle<oatpp::data::buffer::Processor>(encoder),
+      oatpp::base::ObjectHandle<oatpp::data::buffer::Processor>(decoder)
+    }));
+
+    auto buffer = std::make_shared<oatpp::data::buffer::IOBuffer>();
+    return oatpp::data::stream::transferAsync(&m_inStream, &m_outStream, 0, buffer, pipeline)
+           .next(yieldTo(&TestCoroutine::check));
+  }
+
+  Action check() {
+
+    auto check = m_outStream.toString();
+
+    if (check != m_original) {
+      OATPP_LOGD("TEST", "Error. e=%d, d=%d", m_e, m_d);
+    }
+
+    OATPP_ASSERT(check == m_original);
+
+    return yieldTo(&TestCoroutine::act);
 
   }
 
 };
-
-class TestIterationCoroutine : public oatpp::async::Coroutine<TestIterationCoroutine> {
-private:
-  oatpp::String m_text;
-  v_buff_size m_chunkSize;
-  v_buff_size m_bufferSize;
-  bool m_useGzip;
-public:
-
-  TestIterationCoroutine(const oatpp::String& text, v_buff_size chunkSize, v_buff_size bufferSize, bool useGzip)
-    : m_text(text)
-    , m_chunkSize(chunkSize)
-    , m_bufferSize(bufferSize)
-    , m_useGzip(useGzip)
-  {}
-
-
-
-};
-
-void runCompressor (bool useGzip) {
-
-  for (v_int32 i = 1; i <= 128; i++) {
-    for (v_int32 b = 1; b <= 64; b++) {
-
-      oatpp::String original(2048);
-      oatpp::utils::random::Random::randomBytes(original->getData(), original->getSize());
-
-      auto result = oatpp::zlib::deflate(original, i, b, useGzip);
-      auto check = oatpp::zlib::inflate(result, i, b, useGzip);
-
-      if (check != original) {
-        OATPP_LOGD("TEST", "Error. i=%d, b=%d", i, b);
-      }
-
-      OATPP_ASSERT(check == original);
-
-    }
-  }
-
-}
 
 }
 
 void DeflateAsyncTest::onRun() {
 
-  {
-    oatpp::test::PerformanceChecker timer("Deflate");
-    runCompressor(false);
-  }
 
-  {
-    oatpp::test::PerformanceChecker timer("Gzip");
-    runCompressor(true);
-  }
+  oatpp::async::Executor executor;
+
+  executor.execute<TestCoroutine>(false);
+  executor.execute<TestCoroutine>(true);
+
+  executor.waitTasksFinished();
+  executor.stop();
+  executor.join();
+
 
 }
 

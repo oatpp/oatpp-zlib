@@ -24,8 +24,9 @@
 
 #include "DeflateTest.hpp"
 
-#include "oatpp-zlib/Deflate.hpp"
+#include "oatpp-zlib/Processor.hpp"
 #include "oatpp/core/utils/Random.hpp"
+#include "oatpp/core/data/stream/BufferStream.hpp"
 
 #include "oatpp-test/Checker.hpp"
 
@@ -33,19 +34,69 @@ namespace oatpp { namespace test { namespace zlib {
 
 namespace {
 
-void runCompressor (bool useGzip) {
+void runCompressorPipeline (bool gzip) {
 
-  for (v_int32 i = 1; i <= 128; i++) {
-    for (v_int32 b = 1; b <= 64; b++) {
+  for (v_int32 e = 1; e <= 64; e++) {
+    for (v_int32 d = 1; d <= 64; d++) {
 
-      oatpp::String original(2048);
+      oatpp::String original(1024);
       oatpp::utils::random::Random::randomBytes(original->getData(), original->getSize());
 
-      auto result = oatpp::zlib::deflate(original, i, b, useGzip);
-      auto check = oatpp::zlib::inflate(result, i, b, useGzip);
+      oatpp::data::stream::BufferInputStream inStream(original);
+      oatpp::data::stream::BufferOutputStream outStream;
+
+      oatpp::zlib::DeflateEncoder encoder(e, gzip);
+      oatpp::zlib::DeflateDecoder decoder(d, gzip);
+
+      oatpp::data::buffer::ProcessingPipeline pipeline({
+                                                         &encoder,
+                                                         &decoder
+                                                       });
+
+      oatpp::data::buffer::IOBuffer buffer;
+      auto res = oatpp::data::stream::transfer(&inStream, &outStream, 0, buffer.getData(), buffer.getSize(), &pipeline);
+
+      auto check = outStream.toString();
 
       if (check != original) {
-        OATPP_LOGD("TEST", "Error. i=%d, b=%d", i, b);
+        OATPP_LOGD("TEST", "Error. e=%d, d=%d, res=%d", e, d, res);
+      }
+
+      OATPP_ASSERT(check == original);
+
+    }
+  }
+
+}
+
+void runCompressor (bool gzip) {
+
+  for (v_int32 e = 1; e <= 64; e++) {
+    for (v_int32 d = 1; d <= 64; d++) {
+
+      oatpp::String original(1024);
+      oatpp::utils::random::Random::randomBytes(original->getData(), original->getSize());
+
+      oatpp::data::buffer::IOBuffer buffer;
+
+      oatpp::data::stream::BufferInputStream inStream(original);
+      oatpp::data::stream::BufferOutputStream outEncoded;
+
+      oatpp::zlib::DeflateEncoder encoder(e, gzip);
+
+      oatpp::data::stream::transfer(&inStream, &outEncoded, 0, buffer.getData(), buffer.getSize(), &encoder);
+
+      oatpp::data::stream::BufferInputStream inEncoded(outEncoded.toString());
+      oatpp::data::stream::BufferOutputStream outStream;
+
+      oatpp::zlib::DeflateDecoder decoder(d, gzip);
+
+      oatpp::data::stream::transfer(&inEncoded, &outStream, 0, buffer.getData(), buffer.getSize(), &decoder);
+
+      auto check = outStream.toString();
+
+      if (check != original) {
+        OATPP_LOGD("TEST", "Error. e=%d, d=%d", e, d);
       }
 
       OATPP_ASSERT(check == original);
@@ -67,6 +118,16 @@ void DeflateTest::onRun() {
   {
     oatpp::test::PerformanceChecker timer("Gzip");
     runCompressor(true);
+  }
+
+  {
+    oatpp::test::PerformanceChecker timer("Deflate - pipeline");
+    runCompressorPipeline(false);
+  }
+
+  {
+    oatpp::test::PerformanceChecker timer("Gzip - pipeline");
+    runCompressorPipeline(true);
   }
 
 }

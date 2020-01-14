@@ -7,7 +7,7 @@
 namespace {
 
 void runTests() {
-  //OATPP_RUN_TEST(oatpp::test::zlib::DeflateTest);
+  OATPP_RUN_TEST(oatpp::test::zlib::DeflateTest);
   OATPP_RUN_TEST(oatpp::test::zlib::DeflateAsyncTest);
 }
 

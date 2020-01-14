@@ -1,7 +1,7 @@
 
 add_library(${OATPP_THIS_MODULE_NAME}
-        oatpp-zlib/Deflate.cpp
-        oatpp-zlib/Deflate.hpp
+        oatpp-zlib/Processor.cpp
+        oatpp-zlib/Processor.hpp
 )
 
 set_target_properties(${OATPP_THIS_MODULE_NAME} PROPERTIES
