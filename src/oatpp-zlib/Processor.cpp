@@ -282,4 +282,48 @@ v_int32 DeflateDecoder::iterate(data::buffer::InlineReadData& dataIn, data::buff
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DeflateEncoderProvider
+
+oatpp::String DeflateEncoderProvider::getEncodingName() {
+  return "deflate";
+}
+
+std::shared_ptr<data::buffer::Processor> DeflateEncoderProvider::getProcessor() {
+  return std::make_shared<DeflateEncoder>(2048, false);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DeflateDecoderProvider
+
+oatpp::String DeflateDecoderProvider::getEncodingName() {
+  return "deflate";
+}
+
+std::shared_ptr<data::buffer::Processor> DeflateDecoderProvider::getProcessor() {
+  return std::make_shared<DeflateDecoder>(2048, false);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// GzipEncoderProvider
+
+oatpp::String GzipEncoderProvider::getEncodingName() {
+  return "gzip";
+}
+
+std::shared_ptr<data::buffer::Processor> GzipEncoderProvider::getProcessor() {
+  return std::make_shared<DeflateEncoder>(2048, true);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DeflateDecoderProvider
+
+oatpp::String GzipDecoderProvider::getEncodingName() {
+  return "gzip";
+}
+
+std::shared_ptr<data::buffer::Processor> GzipDecoderProvider::getProcessor() {
+  return std::make_shared<DeflateDecoder>(2048, true);
+}
+
 }}
