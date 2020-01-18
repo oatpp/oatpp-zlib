@@ -2,6 +2,8 @@
 add_library(${OATPP_THIS_MODULE_NAME}
         oatpp-zlib/Processor.cpp
         oatpp-zlib/Processor.hpp
+        oatpp-zlib/EncoderProvider.cpp
+        oatpp-zlib/EncoderProvider.hpp
 )
 
 set_target_properties(${OATPP_THIS_MODULE_NAME} PROPERTIES

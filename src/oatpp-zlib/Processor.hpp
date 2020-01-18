@@ -25,7 +25,6 @@
 #ifndef oatpp_zlib_Processor_hpp
 #define oatpp_zlib_Processor_hpp
 
-#include "oatpp/web/protocol/http/encoding/EncoderProvider.hpp"
 #include "oatpp/core/data/buffer/Processor.hpp"
 
 #include "zlib.h"
@@ -109,86 +108,6 @@ public:
    * @return - &l:Processor::Error;.
    */
   v_int32 iterate(data::buffer::InlineReadData& dataIn, data::buffer::InlineReadData& dataOut) override;
-
-};
-
-/**
- * EncoderProvider for "deflate" encoding.
- */
-class DeflateEncoderProvider : public web::protocol::http::encoding::EncoderProvider {
-public:
-
-  /**
-   * Get encoding name.
-   * @return
-   */
-  oatpp::String getEncodingName() override;
-
-  /**
-   * Get &id:oatpp::data::buffer::Processor; for chunked encoding.
-   * @return - &id:oatpp::data::buffer::Processor;
-   */
-  std::shared_ptr<data::buffer::Processor> getProcessor() override;
-
-};
-
-/**
- * EncoderProvider for "deflate" decoding.
- */
-class DeflateDecoderProvider : public web::protocol::http::encoding::EncoderProvider {
-public:
-
-  /**
-   * Get encoding name.
-   * @return
-   */
-  oatpp::String getEncodingName() override;
-
-  /**
-   * Get &id:oatpp::data::buffer::Processor; for chunked decoding.
-   * @return - &id:oatpp::data::buffer::Processor;
-   */
-  std::shared_ptr<data::buffer::Processor> getProcessor() override;
-
-};
-
-/**
- * EncoderProvider for "gzip" encoding.
- */
-class GzipEncoderProvider : public web::protocol::http::encoding::EncoderProvider {
-public:
-
-  /**
-   * Get encoding name.
-   * @return
-   */
-  oatpp::String getEncodingName() override;
-
-  /**
-   * Get &id:oatpp::data::buffer::Processor; for chunked encoding.
-   * @return - &id:oatpp::data::buffer::Processor;
-   */
-  std::shared_ptr<data::buffer::Processor> getProcessor() override;
-
-};
-
-/**
- * EncoderProvider for "gzip" decoding.
- */
-class GzipDecoderProvider : public web::protocol::http::encoding::EncoderProvider {
-public:
-
-  /**
-   * Get encoding name.
-   * @return
-   */
-  oatpp::String getEncodingName() override;
-
-  /**
-   * Get &id:oatpp::data::buffer::Processor; for chunked decoding.
-   * @return - &id:oatpp::data::buffer::Processor;
-   */
-  std::shared_ptr<data::buffer::Processor> getProcessor() override;
 
 };
 
