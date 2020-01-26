@@ -1,2 +1,3 @@
-# oatpp-starter-module [![oatpp build status](https://dev.azure.com/lganzzzo/lganzzzo/_apis/build/status/oatpp.oatpp-starter-module)](https://dev.azure.com/lganzzzo/lganzzzo/_build?definitionId=4)
-starter project for oatpp module
+# oatpp-zlib [![Build Status](https://dev.azure.com/lganzzzo/lganzzzo/_apis/build/status/oatpp.oatpp-zlib?branchName=master)](https://dev.azure.com/lganzzzo/lganzzzo/_build/latest?definitionId=23&branchName=master)
+
+Module `oatpp-zlib` provides functionality for compressing/decompressing content with `deflate` and `gzip`.
