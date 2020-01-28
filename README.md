@@ -15,7 +15,9 @@ See more:
 
 #### Install ZLib
 
+```bash
 sudo apt-get install zlib1g-dev
+```
 
 ### Install oatpp-zlib
 
