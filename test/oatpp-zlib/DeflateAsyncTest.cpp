@@ -67,8 +67,8 @@ public:
       return finish();
     }
 
-    oatpp::utils::random::Random::randomBytes(m_original->getData(), m_original->getSize());
-    m_inStream.reset(m_original.getPtr(), m_original->getData(), m_original->getSize());
+    oatpp::utils::random::Random::randomBytes((p_char8)m_original->data(), m_original->size());
+    m_inStream.reset(m_original.getPtr(), (p_char8)m_original->data(), m_original->size());
     m_outStream.setCurrentPosition(0);
     return yieldTo(&TestCoroutine::runPipeline);
   }

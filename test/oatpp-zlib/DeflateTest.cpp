@@ -40,7 +40,7 @@ void runCompressorPipeline (bool gzip) {
     for (v_int32 d = 1; d <= 64; d++) {
 
       oatpp::String original(1024);
-      oatpp::utils::random::Random::randomBytes(original->getData(), original->getSize());
+      oatpp::utils::random::Random::randomBytes((p_char8)original->data(), original->size());
 
       oatpp::data::stream::BufferInputStream inStream(original);
       oatpp::data::stream::BufferOutputStream outStream;
@@ -75,7 +75,7 @@ void runCompressor (bool gzip) {
     for (v_int32 d = 1; d <= 64; d++) {
 
       oatpp::String original(1024);
-      oatpp::utils::random::Random::randomBytes(original->getData(), original->getSize());
+      oatpp::utils::random::Random::randomBytes((p_char8)original->data(), original->size());
 
       oatpp::data::buffer::IOBuffer buffer;
 
