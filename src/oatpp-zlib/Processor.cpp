@@ -63,12 +63,9 @@ DeflateEncoder::DeflateEncoder(v_buff_size bufferSize, bool gzip, v_int32 compre
 
 }
 
-DeflateEncoder::~DeflateEncoder()
-{
-    if (deflateEnd(&m_zStream) != Z_OK)
-    {
-        throw std::runtime_error("[oatpp::zlib::DeflateEncoder::~DeflateEncoder()]: Error. Can't end.");
-    }
+DeflateEncoder::~DeflateEncoder() {
+  v_int32 res = deflateEnd(&m_zStream);
+  OATPP_ASSERT(res == Z_OK);
 }
 
 v_io_size DeflateEncoder::suggestInputStreamReadSize() {
