@@ -54,6 +54,8 @@ public:
    */
   DeflateEncoder(v_buff_size bufferSize = 1024, bool gzip = false, v_int32 compressionLevel = Z_DEFAULT_COMPRESSION);
 
+  ~DeflateEncoder();
+
   /**
    * If the client is using the input stream to read data and push it to the processor,
    * the client MAY ask the processor for a suggested read size.
@@ -92,6 +94,8 @@ public:
    * @param gzip
    */
   DeflateDecoder(v_buff_size bufferSize = 1024, bool gzip = false);
+
+  ~DeflateDecoder();
 
   /**
    * If the client is using the input stream to read data and push it to the processor,

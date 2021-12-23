@@ -63,6 +63,13 @@ DeflateEncoder::DeflateEncoder(v_buff_size bufferSize, bool gzip, v_int32 compre
 
 }
 
+DeflateEncoder::~DeflateEncoder() {
+  v_int32 res = deflateEnd(&m_zStream);
+  if(res != Z_OK) {
+    OATPP_LOGE("[oatpp::zlib::DeflateEncoder::~DeflateEncoder()]", "Error. Failed call to 'deflateEnd()'.")
+  }
+}
+
 v_io_size DeflateEncoder::suggestInputStreamReadSize() {
   return m_bufferSize;
 }
@@ -186,6 +193,13 @@ DeflateDecoder::DeflateDecoder(v_buff_size bufferSize, bool gzip)
     throw std::runtime_error("[oatpp::zlib::DeflateDecoder::DeflateDecoder()]: Error. Can't init.");
   }
 
+}
+
+DeflateDecoder::~DeflateDecoder() {
+  v_int32 res = inflateEnd(&m_zStream);
+  if(res != Z_OK) {
+    OATPP_LOGE("[oatpp::zlib::DeflateDecoder::~DeflateDecoder()]", "Error. Failed call to 'inflateEnd()'.")
+  }
 }
 
 v_io_size DeflateDecoder::suggestInputStreamReadSize() {
