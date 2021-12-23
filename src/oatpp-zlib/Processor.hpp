@@ -95,6 +95,8 @@ public:
    */
   DeflateDecoder(v_buff_size bufferSize = 1024, bool gzip = false);
 
+  ~DeflateDecoder();
+
   /**
    * If the client is using the input stream to read data and push it to the processor,
    * the client MAY ask the processor for a suggested read size.
