@@ -25,10 +25,10 @@
 #include "DeflateAsyncTest.hpp"
 
 #include "oatpp-zlib/Processor.hpp"
-#include "oatpp/core/utils/Random.hpp"
-#include "oatpp/core/data/stream/BufferStream.hpp"
+#include "oatpp/utils/Random.hpp"
+#include "oatpp/data/stream/BufferStream.hpp"
 
-#include "oatpp/core/async/Executor.hpp"
+#include "oatpp/async/Executor.hpp"
 
 namespace oatpp { namespace test { namespace zlib {
 
@@ -67,7 +67,7 @@ public:
       return finish();
     }
 
-    oatpp::utils::random::Random::randomBytes((p_char8)m_original->data(), m_original->size());
+    oatpp::utils::Random::randomBytes((p_char8)m_original->data(), m_original->size());
     m_inStream.reset(m_original.getPtr(), (p_char8)m_original->data(), m_original->size());
     m_outStream.setCurrentPosition(0);
     return yieldTo(&TestCoroutine::runPipeline);
@@ -92,7 +92,7 @@ public:
     auto check = m_outStream.toString();
 
     if (check != m_original) {
-      OATPP_LOGD("TEST", "Error. e=%d, d=%d", m_e, m_d);
+      OATPP_LOGd("TEST", "Error. e={}, d={}", m_e, m_d);
     }
 
     OATPP_ASSERT(check == m_original);

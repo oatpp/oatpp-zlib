@@ -25,7 +25,7 @@
 #ifndef oatpp_zlib_Processor_hpp
 #define oatpp_zlib_Processor_hpp
 
-#include "oatpp/core/data/buffer/Processor.hpp"
+#include "oatpp/data/buffer/Processor.hpp"
 
 #include "zlib.h"
 #include <memory>

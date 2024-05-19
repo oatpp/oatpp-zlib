@@ -25,8 +25,8 @@
 #include "DeflateTest.hpp"
 
 #include "oatpp-zlib/Processor.hpp"
-#include "oatpp/core/utils/Random.hpp"
-#include "oatpp/core/data/stream/BufferStream.hpp"
+#include "oatpp/utils/Random.hpp"
+#include "oatpp/data/stream/BufferStream.hpp"
 
 #include "oatpp-test/Checker.hpp"
 
@@ -40,7 +40,7 @@ void runCompressorPipeline (bool gzip) {
     for (v_int32 d = 1; d <= 64; d++) {
 
       oatpp::String original(1024);
-      oatpp::utils::random::Random::randomBytes((p_char8)original->data(), original->size());
+      oatpp::utils::Random::randomBytes((p_char8)original->data(), original->size());
 
       oatpp::data::stream::BufferInputStream inStream(original);
       oatpp::data::stream::BufferOutputStream outStream;
@@ -59,7 +59,7 @@ void runCompressorPipeline (bool gzip) {
       auto check = outStream.toString();
 
       if (check != original) {
-        OATPP_LOGD("TEST", "Error. e=%d, d=%d, res=%d", e, d, res);
+        OATPP_LOGd("TEST", "Error. e={}, d={}, res={}", e, d, res);
       }
 
       OATPP_ASSERT(check == original);
@@ -75,7 +75,7 @@ void runCompressor (bool gzip) {
     for (v_int32 d = 1; d <= 64; d++) {
 
       oatpp::String original(1024);
-      oatpp::utils::random::Random::randomBytes((p_char8)original->data(), original->size());
+      oatpp::utils::Random::randomBytes((p_char8)original->data(), original->size());
 
       oatpp::data::buffer::IOBuffer buffer;
 
@@ -96,7 +96,7 @@ void runCompressor (bool gzip) {
       auto check = outStream.toString();
 
       if (check != original) {
-        OATPP_LOGD("TEST", "Error. e=%d, d=%d", e, d);
+        OATPP_LOGd("TEST", "Error. e={}, d={}", e, d);
       }
 
       OATPP_ASSERT(check == original);

@@ -23,6 +23,7 @@
  ***************************************************************************/
 
 #include "Processor.hpp"
+#include "oatpp/base/Log.hpp"
 
 namespace oatpp { namespace zlib {
 
@@ -54,12 +55,12 @@ DeflateEncoder::DeflateEncoder(v_buff_size bufferSize, bool gzip, v_int32 compre
                        8 /* default memory */,
                        Z_DEFAULT_STRATEGY);
     if(res != Z_OK) {
-      OATPP_LOGE("[oatpp::zlib::DeflateEncoder::DeflateEncoder()]", "Error. Failed call to 'deflateInit2()'. Result %d", res)
+      OATPP_LOGe("[oatpp::zlib::DeflateEncoder::DeflateEncoder()]", "Error. Failed call to 'deflateInit2()'. Result {}", res)
     }
   } else {
     res = deflateInit(&m_zStream, compressionLevel);
     if(res != Z_OK) {
-      OATPP_LOGE("[oatpp::zlib::DeflateEncoder::DeflateEncoder()]", "Error. Failed call to 'deflateInit()'. Result %d", res)
+      OATPP_LOGe("[oatpp::zlib::DeflateEncoder::DeflateEncoder()]", "Error. Failed call to 'deflateInit()'. Result {}", res)
     }
   }
 
@@ -72,7 +73,7 @@ DeflateEncoder::DeflateEncoder(v_buff_size bufferSize, bool gzip, v_int32 compre
 DeflateEncoder::~DeflateEncoder() {
   v_int32 res = deflateEnd(&m_zStream);
   if(res != Z_OK) {
-    OATPP_LOGE("[oatpp::zlib::DeflateEncoder::~DeflateEncoder()]", "Error. Failed call to 'deflateEnd()'. Result %d", res)
+    OATPP_LOGe("[oatpp::zlib::DeflateEncoder::~DeflateEncoder()]", "Error. Failed call to 'deflateEnd()'. Result {}", res)
   }
 }
 
@@ -192,12 +193,12 @@ DeflateDecoder::DeflateDecoder(v_buff_size bufferSize, bool gzip)
   if(gzip) {
     res = inflateInit2(&m_zStream, 15 | 16);
     if(res != Z_OK) {
-      OATPP_LOGE("[oatpp::zlib::DeflateDecoder::DeflateDecoder()]", "Error. Failed call to 'inflateInit2()'. Result %d", res)
+      OATPP_LOGe("[oatpp::zlib::DeflateDecoder::DeflateDecoder()]", "Error. Failed call to 'inflateInit2()'. Result {}", res)
     }
   } else {
     res = inflateInit(&m_zStream);
     if(res != Z_OK) {
-      OATPP_LOGE("[oatpp::zlib::DeflateDecoder::DeflateDecoder()]", "Error. Failed call to 'inflateInit()'. Result %d", res)
+      OATPP_LOGe("[oatpp::zlib::DeflateDecoder::DeflateDecoder()]", "Error. Failed call to 'inflateInit()'. Result {}", res)
     }
   }
 
@@ -210,7 +211,7 @@ DeflateDecoder::DeflateDecoder(v_buff_size bufferSize, bool gzip)
 DeflateDecoder::~DeflateDecoder() {
   v_int32 res = inflateEnd(&m_zStream);
   if(res != Z_OK) {
-    OATPP_LOGE("[oatpp::zlib::DeflateDecoder::~DeflateDecoder()]", "Error. Failed call to 'inflateEnd()'. Result %d", res)
+    OATPP_LOGe("[oatpp::zlib::DeflateDecoder::~DeflateDecoder()]", "Error. Failed call to 'inflateEnd()'. Result {}", res)
   }
 }
 
